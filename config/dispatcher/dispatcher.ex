@@ -22,6 +22,40 @@ defmodule Dispatcher do
   #   Proxy.forward conn, path, "http://resource/themes/"
   # end
 
+  match "/mockauth/*path" do
+    Proxy.forward conn, path, "http://mockauth/"
+  end
+
+  match "/upload/*path" do
+    Proxy.forward conn, path, "http://file/files/"
+  end
+
+  match "/files/*path" do
+    Proxy.forward conn, path, "http://resource/files/"
+  end
+
+  match "/documents/search/*path" do
+    Proxy.forward conn, path, "http://musearch/documents/search/"
+  end
+
+  match "/documents/index/*path" do
+    Proxy.forward conn, path, "http://musearch/documents/search/"
+  end
+
+  match "/documents/invalidate/*path" do
+    Proxy.forward conn, path, "http://musearch/documents/invalidate/"
+  end
+
+  match "/musearch/settings/*path" do
+    Proxy.forward conn, path, "http://musearch/settings/"
+  end
+
+
+  match "/documents/*path" do
+    Proxy.forward conn, path, "http://resource/documents/"
+  end
+
+
   match _ do
     send_resp( conn, 404, "Route not found.  See config/dispatcher.ex" )
   end

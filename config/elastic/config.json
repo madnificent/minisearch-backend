@@ -1,0 +1,57 @@
+{
+  "batch_size": 128,
+  "max_batches":0,
+  "automatic_index_updates" : true,
+  "eager_indexing_groups" : [[{"name" : "read_documents", "variables" : ["human"]}],
+                             [{"name" : "read_documents", "variables" : ["laser"]}],
+                             [{"name" : "read_documents", "variables" : ["radar"]}],
+                             [{"name" : "write_documents", "variables" : ["human"]}],
+                             [{"name" : "write_documents", "variables" : ["laser"]}],
+                             [{"name" : "write_documents", "variables" : ["radar"]}],
+                             [{"name" : "read", "variables":[]}],
+                             [{"name" : "clean", "variables": []}]],
+  "attachments_path_base" : "/data/",
+  "eager_indexing_sparql_query" : false,
+  "additive_indexes": true,
+  "persist_indexes" : true,
+  "types": [
+    {
+      "type": "document",
+      "on_path": "documents",
+      "rdf_type": "http://xmlns.com/foaf/0.1/Document",
+      "properties": {
+        "title" : "http://purl.org/dc/terms/title",
+        "description" : "http://mu.semte.ch/vocabularies/ext/omschrijving",
+        "data" : {
+          "via" : [
+            "http://mu.semte.ch/vocabularies/ext/file",
+            "^http://www.semanticdesktop.org/ontologies/2007/01/19/nie#dataSource"
+          ],
+          "attachment_pipeline" : "attachment"
+        }
+      },
+      "mappings": { //null
+        "properties": {
+          "attachment.content": {
+            "type": "text",
+            "analyzer": "dutchanalyzer",
+            "search_analyzer": "dutchanalyzer",
+            "term_vector": "with_positions_offsets_payloads"
+          },
+          "title": {
+            "type": "text",
+            "analyzer": "dutchanalyzer",
+            "search_analyzer": "dutchanalyzer"
+          },
+          "description": {
+            "type": "text",
+            "analyzer": "dutchanalyzer",
+            "search_analyzer": "dutchanalyzer"
+          },
+          "date": {
+            "type": "date"
+          }
+        }
+      }
+    }]
+}
