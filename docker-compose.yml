@@ -55,7 +55,7 @@ services:
     volumes:
       - ./data/elasticsearch/:/usr/share/elasticsearch/data
     environment:
-      ES_JAVA_OPTS: "-Xms16g -Xmx16g"
+      ES_JAVA_OPTS: "-Xms32g -Xmx32g"
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.2
     environment:
