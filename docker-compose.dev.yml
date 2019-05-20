@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  identifier:
+    ports:
+      - "80:80"
+  database:
+    environment:
+      LOG_INCOMING_SPARQL_QUERIES: "on"
+      LOG_OUTGOING_SPARQL_QUERIES: "on"
+      LOG_ACCESS_RIGHTS: "on"
+      LOG_SERVER_CONFIGURATION: "on"
+      LOG_DELTA_CLIENT_COMMUNICATION: "on"
+      MU_SPARQL_ENDPOINT: "http://triplestore:8890/sparql"
+  backingTriplestore:
+    ports:
+      - "8890:8890"
+  musearch:
+    ports:
+      - 8889:80
+    environment:
+      RACK_ENV: development
+      MU_APPLICATION_GRAPH: "http://mu.semte.ch/application"
+  elasticsearch:
+    ports:
+      - 9200:9200
+    environment:
+      # TAKE_FILE_OWNERSHIP: /usr/share/elasticsearch/data
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+  kibana:
+    ports:
+      - 5601:5601

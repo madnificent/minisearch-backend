@@ -5,8 +5,6 @@ services:
     image: semtech/mu-identifier:1.5.0
     links:
       - dispatcher:dispatcher
-    ports:
-      - "80:80"
   dispatcher:
     image: semtech/mu-dispatcher:1.1.2
     links:
@@ -23,11 +21,6 @@ services:
     volumes:
       - ./config/authorization:/config
     environment:
-      LOG_INCOMING_SPARQL_QUERIES: "on"
-      LOG_OUTGOING_SPARQL_QUERIES: "on"
-      LOG_ACCESS_RIGHTS: "on"
-      LOG_SERVER_CONFIGURATION: "on"
-      LOG_DELTA_CLIENT_COMMUNICATION: "on"
       MU_SPARQL_ENDPOINT: "http://triplestore:8890/sparql"
     links:
       - backingTriplestore:triplestore
@@ -41,8 +34,6 @@ services:
     environment:
       SPARQL_UPDATE: "true"
       DEFAULT_GRAPH: "http://mu.semte.ch/application"
-    ports:
-      - "8890:8890"
     volumes:
       - ./data/db:/data
   resource:
@@ -53,14 +44,9 @@ services:
       - ./config/resources:/config
   musearch:
     image: semtech/mu-search
-    ports:
-      - 8889:80
     links:
       - elasticsearch:elasticsearch
       - database:db
-    environment:
-      RACK_ENV: development
-      MU_APPLICATION_GRAPH: "http://mu.semte.ch/application"
     volumes:
       - ./config/elastic:/config
       - ./data/files:/data
@@ -68,17 +54,12 @@ services:
     build: ./elasticsearch-image
     volumes:
       - ./data/elasticsearch/:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
     environment:
-      TAKE_FILE_OWNERSHIP: /mnt/kans-search-data/kanselarij/elasticsearch
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      ES_JAVA_OPTS: "-Xms16g -Xmx16g"
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.2
     environment:
       ELASTICSEARCH_URL: "http://elasticsearch:9200"
-    ports:
-      - 5601:5601
   file:
     image: semtech/mu-file-service:3.1.0
     links:
