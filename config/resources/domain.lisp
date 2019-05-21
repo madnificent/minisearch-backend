@@ -67,69 +67,6 @@
 ;;
 
 
-(define-resource mailbox ()
-  :class (s-prefix "nmo:Mailbox")
-  :properties `((:id :string ,(s-prefix "nie:identifier")))
-  :has-many `((folder :via ,(s-prefix "fni:hasPart")
-                      :as "folders"))
-  :resource-base (s-url "http://data.lblod.info/id/mailboxes/")
-  :features '(include-uri)
-  :on-path "mailboxes")
-
-(define-resource folder ()
-  :class (s-prefix "nfo:Folder")
-  :properties `((:name :string ,(s-prefix "nie:title"))
-                (:description :string ,(s-prefix "nie:description")))
-  :has-many `((email :via ,(s-prefix "nmo:isPartOf");;hack, as mu-cl-resources doesn't support superclasses yet (http://oscaf.sourceforge.net/nmo.html#nmo:MailboxDataObject)
-                     :inverse t
-                     :as "emails")
-              (folder :via ,(s-prefix "email:hasFolder");;hack, as mu-cl-resources doesn't support superclasses yet (http://oscaf.sourceforge.net/nmo.html#nmo:MailboxDataObject)
-                      :as "folders"))
-  :resource-base (s-url "http://data.lblod.info/id/mail-folders/")
-  :features '(include-uri)
-  :on-path "mail-folders")
-
-(define-resource email ()
-  :class (s-prefix "nmo:Email")
-  :properties `((:message-id :string ,(s-prefix "nmo:messageId"));; e-mail protocol-specific id: https://tools.ietf.org/html/rfc2822#section-3.6.4
-                (:from :string ,(s-prefix "nmo:messageFrom"))
-                (:to :string ,(s-prefix "nmo:emailTo"))
-                (:cc :string ,(s-prefix "nmo:emailCc"))
-                (:bcc :string ,(s-prefix "nmo:emailBcc"))
-                (:subject :string ,(s-prefix "nmo:messageSubject"))
-                (:content :string ,(s-prefix "nmo:plainTextMessageContent"))
-                (:html-content :string ,(s-prefix "nmo:htmlMessageContent"))
-                (:is-read :boolean ,(s-prefix "nmo:isRead"))
-                (:content-mime-type :string ,(s-prefix "nmo:contentMimeType"))
-                (:received-date :datetime ,(s-prefix "nmo:receivedDate"))
-                (:sent-date :datetime ,(s-prefix "nmo:sentDate")))
-  :has-one `((email :via ,(s-prefix "nmo:inReplyTo")
-                    :as "in-reply-to")
-             (folder :via ,(s-prefix "nmo:isPartOf")
-                     :as "folder"))
-  :has-many `((email-header :via ,(s-prefix "nmo:messageHeader")
-                            :as "headers")
-              ;; (file :via ,(s-prefix "nmo:hasAttachment")
-              ;;       :as "attachments")
-              )
-                                        ;           (email :via ,(s-prefix "nmo:references");;https://tools.ietf.org/html/rfc2822#section-3.6.4
-                                        ;                   :as "references"))
-  :resource-base (s-url "http://data.lblod.info/id/emails/")
-  :features '(include-uri)
-  :on-path "emails")
-
-(define-resource email-header ()
-  :class (s-prefix "nmo:MessageHeader")
-  :properties `((:header-name :string ,(s-prefix "nmo:headerName"))
-                (:header-value :string ,(s-prefix "nmo:headerValue")))
-  :has-one `((email :via ,(s-prefix "nmo:messageHeader")
-                    :inverse t
-                    :as "email"))
-  :resource-base (s-url "http://data.lblod.info/id/email-headers/")
-  :features '(include-uri)
-  :on-path "email-headers")
-
-
 (define-resource file ()
   :class (s-prefix "nfo:FileDataObject")
   :properties `((:filename :string ,(s-prefix "nfo:fileName"))
@@ -146,9 +83,51 @@
 
 (define-resource document ()
   :class (s-prefix "foaf:Document")
-  :properties `((:title :string ,(s-prefix "dct:title"))
-                (:description :string ,(s-prefix "ext:omschrijving")))
-  :has-one `((file :via ,(s-prefix "ext:file")
+  :properties `((:archived        :boolean ,(s-prefix "besluitvorming:gearchiveerd"))
+                (:title           :string ,(s-prefix "dct:title")) ;;string-set
+                (:description     :string ,(s-prefix "ext:omschrijving")) ;;string-set
+                (:confidential    :boolean ,(s-prefix "ext:vertrouwelijk")) ;;string-set
+                (:created         :datetime ,(s-prefix "dct:created"))
+                (:number-vp       :string ,(s-prefix "besluitvorming:stuknummerVP")) ;; NOTE: What is the URI of property 'stuknummerVP'? Made up besluitvorming:stuknummerVP
+                (:number-vr       :string ,(s-prefix "besluitvorming:stuknummerVR"))) ;; NOTE: What is the URI of property 'stuknummerVR'? Made up besluitvorming:stuknummerVR
+  :has-many `((document-version   :via ,(s-prefix "besluitvorming:heeftVersie")
+                                  :as "document-versions"))
+  :has-one `((document-type       :via ,(s-prefix "ext:documentType")
+                                  :as "type")
+             (file :via ,(s-prefix "ext:file")
                    :as "file"))
-  :resource-base (s-url "http://data.example.com/documents/")
+  :resource-base (s-url "http://kanselarij.vo.data.gift/id/documenten/")
+  :features '(include-uri)
   :on-path "documents")
+
+(define-resource document-version ()
+  :class (s-prefix "ext:DocumentVersie")
+  :properties `((:version-number        :string   ,(s-prefix "ext:versieNummer"))
+                (:created               :datetime ,(s-prefix "dct:created"))
+                (:number-vr             :string ,(s-prefix "besluitvorming:stuknummerVR")) 
+                (:chosen-file-name      :string   ,(s-prefix "ext:gekozenDocumentNaam")))
+  :has-one `((file                      :via      ,(s-prefix "ext:file")
+                                        :as "file")
+            (document                   :via      ,(s-prefix "besluitvorming:heeftVersie")
+                                        :inverse t
+                                        :as "document"))
+  :resource-base (s-url "http://kanselarij.vo.data.gift/id/document-versies/")
+  :features `(include-uri)
+  :on-path "document-versions")
+
+(define-resource document-type ()
+  :class (s-prefix "ext:DocumentTypeCode")
+  :properties `((:label             :string ,(s-prefix "skos:prefLabel"))
+                (:scope-note        :string ,(s-prefix "skos:scopeNote"))
+                (:alt-label         :string ,(s-prefix "skos:altLabel")))
+  :has-many `((document             :via    ,(s-prefix "ext:documentType")
+                                    :inverse t
+                                    :as "documents")
+              (document-type        :via    ,(s-prefix "skos:broader")
+                                    :inverse t
+                                    :as "subtypes"))
+  :has-one `((document-type         :via    ,(s-prefix "skos:broader")
+                                    :as "supertype"))
+  :resource-base (s-url "http://kanselarij.vo.data.gift/id/concept/document-type-codes/")
+  :features '(include-uri)
+  :on-path "document-types")
